@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const _MAP = {
   8: 'backspace',
@@ -40,21 +40,21 @@ const oppositeKeyMap = {
 }
 function useKeys(keysToUse = []) {
   const [keys, setKeys] = useState([])
-  // const [resetTimeout, setResetTimeout] = useState()
+  const setKeysAndRef = keys => {
+    setKeys(keys)
+    keysRef.current = keys
+  }
+  const keysRef = useRef(keys)
   function keyDownHandler(e) {
-    // clearTimeout(resetTimeout)
-    // setResetTimeout(setTimeout(() => setKeys([]), 2000))
     const key = characterFromEvent(e)
-    if (!keys.includes(key) && keysToUse.includes(key)) {
-      // console.log(`${key} true`)
-      setKeys([...removeKey(keys)(oppositeKeyMap[key]), key])
+    if (!keysRef.current.includes(key) && keysToUse.includes(key)) {
+      setKeysAndRef([...removeKey(keysRef.current)(oppositeKeyMap[key]), key])
     }
   }
   function keyUpHandler(e) {
     const key = characterFromEvent(e)
-    if (keys.find(x => x === key)) {
-      // console.log(`${key} false`)
-      setKeys(keys.filter(x => x !== key))
+    if (keysRef.current.find(x => x === key)) {
+      setKeysAndRef(keysRef.current.filter(x => x !== key))
     }
   }
   useEffect(() => {
@@ -64,7 +64,7 @@ function useKeys(keysToUse = []) {
       window.removeEventListener('keydown', keyDownHandler)
       window.removeEventListener('keyup', keyUpHandler)
     }
-  })
+  }, [])
   return keys
 }
 
