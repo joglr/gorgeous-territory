@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useSpring, useTransition, animated } from 'react-spring/hooks'
+import { useSpring, animated } from 'react-spring/hooks'
 import './App.css'
 import useKeys from './hooks/use-keys'
 
