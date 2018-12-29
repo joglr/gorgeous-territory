@@ -20,8 +20,6 @@ const objectStyles = {
   lineHeight: '100%'
 }
 
-const generateKey = () => (Math.random() * 10 ** 6).toString(36)
-
 const items = [
   { content: '🥕', edible: true },
   { content: '🍌', edible: true },
@@ -44,8 +42,10 @@ const items = [
   { content: '🌳', edible: false }
 ]
 
+const generateKey = () => (Math.random() * 10 ** 6).toString(36)
 const toUnits = pixels => Math.floor(pixels / pixelUnit)
 const toPixels = units => units * pixelUnit
+const addVector = ([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2]
 
 function transformFromXY(pos) {
   return {
@@ -129,9 +129,11 @@ const App = function App() {
     if (keys.includes('right')) diff[0] = +speed * pixelUnit
     if (keys.includes('up')) diff[1] = -speed * pixelUnit
     if (keys.includes('down')) diff[1] = +speed * pixelUnit
-    const nextPos = [pos[0] + diff[0], pos[1] + diff[1]]
-    const foundObstacle = obstacles.find(({ pos }) =>
-      posEquals(nextPos.map(Math.floor))(pos)
+    const nextPos = addVector(pos, diff)
+    const foundObstacle = obstacles.find(
+      ({ pos }) =>
+        posEquals(nextPos.map(Math.floor))(pos) ||
+        posEquals(nextPos.map(Math.ceil))(pos)
     )
     if (
       diff[0] !== 0 ||
