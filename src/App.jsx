@@ -4,14 +4,20 @@ import './App.css'
 import useKeys from './hooks/use-keys'
 
 const pixelUnit = 20
-const footprintOccurency = 50
-const obstacleAmount = 100
+const obstacleFrequency = 1 / 10
 const historyLimit = 10
 const frameRate = 60
 const speed = 1 / frameRate
-const unitSize = {
+const objectStyles = {
   width: CSS.px(pixelUnit),
-  height: CSS.px(pixelUnit)
+  height: CSS.px(pixelUnit),
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  lineHeight: '100%'
 }
 
 const generateKey = () => (Math.random() * 10 ** 6).toString(36)
@@ -53,14 +59,16 @@ function transformFromXY(pos) {
   }
 }
 
-function generateObstacles({ width, height, amount }) {
-  // window size withing maximum amount of units
-  const size = [width, height]
-  return Array.from(new Array(amount), () => ({
-    pos: size.map(v => Math.random() * v).map(v => Math.floor(v)),
-    key: generateKey(),
-    ...items[Math.floor(Math.random() * items.length)]
-  }))
+function generateObstaclesFactory({ width, height, amount }) {
+  return () => {
+    // window size withing maximum amount of units
+    const size = [width, height]
+    return Array.from(new Array(amount), () => ({
+      pos: size.map(v => Math.random() * v).map(v => Math.floor(v)),
+      key: generateKey(),
+      ...items[Math.floor(Math.random() * items.length)]
+    }))
+  }
 }
 
 const posEquals = ([x, y]) => ([otherX, otherY]) => otherX === x && otherY === y
@@ -72,7 +80,7 @@ const Obstacles = React.memo(function({ obstacles }) {
         <div
           {...key}
           style={{
-            ...unitSize,
+            ...objectStyles,
             ...transformFromXY(pos)
           }}>
           {content}
@@ -86,24 +94,34 @@ const App = function App() {
   const keys = useKeys(['up', 'down', 'left', 'right', 'space'])
   const [frameCount, setCount] = useState(0)
   const [history, setHistory] = useState([])
-  const [obstacles, setObstacles] = useState(
-    generateObstacles({
-      width: toUnits(window.innerWidth),
-      height: toUnits(window.innerHeight),
-      amount: obstacleAmount
-    })
-  )
+  const generateObstacles = generateObstaclesFactory({
+    width: toUnits(window.innerWidth),
+    height: toUnits(window.innerHeight),
+    amount: Math.floor(
+      toUnits(window.innerWidth) *
+        toUnits(window.innerHeight) *
+        obstacleFrequency
+    )
+  })
+  const [obstacles, setObstacles] = useState(generateObstacles())
   const [pos, setPos] = useState([
     toUnits(Math.floor(window.innerWidth / 2)),
     toUnits(Math.floor(window.innerHeight / 2))
   ])
+  useEffect(() => {
+    function handleResize() {
+      setObstacles(generateObstacles())
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  })
   function update() {
     setCount(frameCount + 1)
-    if (
-      !history.find(({ pos: otherPos }) => posEquals(pos)(otherPos)) &&
-      frameCount % footprintOccurency === 0
-    )
-      setHistory([...history, { pos: pos.map(Math.floor), key: generateKey() }])
+    // if (
+    //   !history.find(({ pos: otherPos }) => posEquals(pos)(otherPos)) &&
+    //   frameCount % footprintOccurency === 0
+    // )
+    //   setHistory([...history, { pos: pos.map(Math.floor), key: generateKey() }])
     if (history.length > historyLimit) setHistory(history.slice(1))
     let diff = [0, 0]
 
@@ -123,6 +141,7 @@ const App = function App() {
       setDotProps(nextPos.map(Math.floor))
       if (foundObstacle && foundObstacle.edible) {
         setObstacles(obstacles.filter(x => x.key !== foundObstacle.key))
+        setHistory([...history, { pos: foundObstacle.pos, key: generateKey() }])
       }
     }
   }
@@ -139,31 +158,27 @@ const App = function App() {
   return (
     <div
       style={{
-        fontSize: CSS.px(pixelUnit * 1.4),
-        fontFamily: 'Consolas',
-        lineHeight: CSS.px(pixelUnit * 1.4)
+        fontSize: CSS.px(pixelUnit),
+        fontFamily: 'Consolas'
       }}>
       {history.map(({ pos, key }) => (
         <div
           key={key}
           style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
+            ...objectStyles,
+            ...transformFromXY(pos),
             fontSize: 10,
-            ...unitSize,
-            ...transformFromXY(pos)
-            // ...props
+            alignItems: 'flex-end'
           }}>
           {'💩'}
         </div>
       ))}
       <animated.div
         style={{
+          ...objectStyles,
+          ...transformFromXY(Object.values(dotProps).map(({ value }) => value)),
           textAlign: 'center',
-          color: 'red',
-          ...unitSize,
-          ...transformFromXY(Object.values(dotProps).map(({ value }) => value))
+          color: 'red'
         }}>
         {'🐇'}
       </animated.div>
