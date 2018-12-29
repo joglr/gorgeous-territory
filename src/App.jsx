@@ -130,10 +130,8 @@ const App = function App() {
     if (keys.includes('up')) diff[1] = -speed * pixelUnit
     if (keys.includes('down')) diff[1] = +speed * pixelUnit
     const nextPos = addVector(pos, diff)
-    const foundObstacle = obstacles.find(
-      ({ pos }) =>
-        posEquals(nextPos.map(Math.floor))(pos) ||
-        posEquals(nextPos.map(Math.ceil))(pos)
+    const foundObstacle = obstacles.find(({ pos }) =>
+      posEquals(nextPos.map(Math.floor))(pos)
     )
     if (
       diff[0] !== 0 ||
