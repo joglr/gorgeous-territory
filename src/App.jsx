@@ -189,6 +189,12 @@ const App = function App() {
         {'🐇'}
       </animated.div>
       <Obstacles obstacles={obstacles} />
+      <div
+        style={{
+          position: 'absolute'
+        }}>
+        noms: {history.length}
+      </div>
     </div>
   )
 }
