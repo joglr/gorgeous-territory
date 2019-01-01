@@ -84,7 +84,7 @@ const Obstacles = React.memo(function({ obstacles }) {
     <>
       {obstacles.map(({ pos, content }, key) => (
         <div
-          {...key}
+          key={pos.join()}
           style={{
             ...objectStyles,
             ...transformFromXY(pos)
@@ -169,7 +169,7 @@ const App = function App() {
       }}>
       {history.map(({ pos, key }) => (
         <div
-          key={key}
+          key={pos.join()}
           style={{
             ...objectStyles,
             ...transformFromXY(pos),
