@@ -4,8 +4,8 @@ import './App.css'
 import useKeys from './hooks/use-keys'
 
 const pixelUnit = 20
-const obstacleFrequency = 1 / 10
-const historyLimit = 10
+const obstacleFrequency = 1 / 5
+const historyLimit = 100
 const frameRate = 60
 const speed = 1 / frameRate
 const objectStyles = {
@@ -61,13 +61,19 @@ function transformFromXY(pos) {
 
 function generateObstaclesFactory({ width, height, amount }) {
   return () => {
-    // window size withing maximum amount of units
-    const size = [width, height]
-    return Array.from(new Array(amount), () => ({
-      pos: size.map(v => Math.random() * v).map(v => Math.floor(v)),
-      key: generateKey(),
-      ...items[Math.floor(Math.random() * items.length)]
-    }))
+    let obstacles = []
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        if (Math.random() < obstacleFrequency) {
+          obstacles.push({
+            pos: [x, y],
+            key: generateKey(),
+            ...items[Math.floor(Math.random() * items.length)]
+          })
+        }
+      }
+    }
+    return obstacles
   }
 }
 
