@@ -5,7 +5,6 @@ import useKeys from './hooks/use-keys'
 
 const pixelUnit = 20
 const obstacleFrequency = 1 / 5
-const historyLimit = 100
 const frameRate = 60
 const speed = 1 / frameRate
 const objectStyles = {
@@ -123,12 +122,6 @@ const App = function App() {
   })
   function update() {
     setCount(frameCount + 1)
-    // if (
-    //   !history.find(({ pos: otherPos }) => posEquals(pos)(otherPos)) &&
-    //   frameCount % footprintOccurency === 0
-    // )
-    //   setHistory([...history, { pos: pos.map(Math.floor), key: generateKey() }])
-    if (history.length > historyLimit) setHistory(history.slice(1))
     let diff = [0, 0]
 
     if (keys.includes('left')) diff[0] = -speed * pixelUnit
