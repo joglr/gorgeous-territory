@@ -3,6 +3,7 @@
   "version": "0.4.3",
   "private": true,
   "dependencies": {
+    "emoji-dictionary": "^1.0.9",
     "react": "^16.7.0-alpha.2",
     "react-dom": "^16.7.0-alpha.2",
     "react-scripts": "2.1.1",

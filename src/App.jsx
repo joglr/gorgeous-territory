@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useSpring, animated } from 'react-spring/hooks'
 import './App.css'
 import useKeys from './hooks/use-keys'
+import emoji from 'emoji-dictionary'
 
 const pixelUnit = 20
 const obstacleFrequency = 1 / 5
 const frameRate = 60
 const speed = 1 / frameRate
+const playerContent = '🐇'
 const objectStyles = {
   width: CSS.px(pixelUnit),
   height: CSS.px(pixelUnit),
@@ -18,27 +20,44 @@ const objectStyles = {
   justifyContent: 'center',
   lineHeight: '100%'
 }
+const dangerousStyles = {
+  filter: 'drop-shadow(0px 0px 5px red)'
+}
+
+const PROPERTIES = {
+  EDIBLE: 'edible',
+  SOLID: 'solid',
+  DANGEROUS: 'dangerous',
+  SLOW: 'slow'
+}
 
 const items = [
-  { content: '🥕', edible: true },
-  { content: '🍌', edible: true },
-  { content: '🍎', edible: true },
-  { content: '🌴', edible: false },
-  { content: '🗻', edible: false },
-  { content: '🏡', edible: false },
-  { content: '🏠', edible: false },
-  { content: '🌲', edible: false },
-  { content: '🌲', edible: false },
-  { content: '🌲', edible: false },
-  { content: '🌲', edible: false },
-  { content: '🌲', edible: false },
-  { content: '🌲', edible: false },
-  { content: '🌳', edible: false },
-  { content: '🌳', edible: false },
-  { content: '🌳', edible: false },
-  { content: '🌳', edible: false },
-  { content: '🌳', edible: false },
-  { content: '🌳', edible: false }
+  { content: '🥕', properties: [PROPERTIES.EDIBLE] },
+  { content: '🍌', properties: [PROPERTIES.EDIBLE] },
+  { content: '🍎', properties: [PROPERTIES.EDIBLE] },
+  { content: '🗻', properties: [PROPERTIES.SOLID] },
+  { content: '🌴', properties: [PROPERTIES.SOLID] },
+  { content: '🏡', properties: [PROPERTIES.SOLID] },
+  { content: '�', properties: [PROPERTIES.SOLID] },
+  { content: '�', properties: [PROPERTIES.SOLID] },
+  { content: '🌲', properties: [PROPERTIES.SOLID] },
+  { content: '🌲', properties: [PROPERTIES.SOLID] },
+  { content: '🌲', properties: [PROPERTIES.SOLID] },
+  { content: '🌲', properties: [PROPERTIES.SOLID] },
+  { content: '🌲', properties: [PROPERTIES.SOLID] },
+  { content: '�', properties: [PROPERTIES.SOLID] },
+  { content: '🌳', properties: [PROPERTIES.SOLID] },
+  { content: '🌳', properties: [PROPERTIES.SOLID] },
+  { content: '🌳', properties: [PROPERTIES.SOLID] },
+  { content: '🌳', properties: [PROPERTIES.SOLID] },
+  { content: '🌳', properties: [PROPERTIES.SOLID] },
+  { content: '🐍', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  { content: '🐉', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  { content: '🦀', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  { content: '🕷', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  { content: '🦂', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  { content: '🐊', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  { content: '🕸', properties: [PROPERTIES.SLOW] }
 ]
 
 const generateKey = () => (Math.random() * 10 ** 6).toString(36)
@@ -66,7 +85,6 @@ function generateObstaclesFactory({ width, height, amount }) {
         if (Math.random() < obstacleFrequency) {
           obstacles.push({
             pos: [x, y],
-            key: generateKey(),
             ...items[Math.floor(Math.random() * items.length)]
           })
         }
@@ -76,20 +94,30 @@ function generateObstaclesFactory({ width, height, amount }) {
   }
 }
 
+const getComponentPropsFromObject = (
+  { pos, content, properties },
+  { style, ...props } = {}
+) => ({
+  key: pos.join(),
+  title: emoji.getName(content),
+  style: {
+    ...objectStyles,
+    ...transformFromXY(pos),
+    ...style,
+    ...(properties && properties.includes(PROPERTIES.DANGEROUS)
+      ? dangerousStyles
+      : {})
+  },
+  ...props
+})
+
 const posEquals = ([x, y]) => ([otherX, otherY]) => otherX === x && otherY === y
 
 const Obstacles = React.memo(function({ obstacles }) {
   return (
     <>
-      {obstacles.map(({ pos, content }, key) => (
-        <div
-          key={pos.join()}
-          style={{
-            ...objectStyles,
-            ...transformFromXY(pos)
-          }}>
-          {content}
-        </div>
+      {obstacles.map(object => (
+        <div {...getComponentPropsFromObject(object)}>{object.content}</div>
       ))}
     </>
   )
@@ -134,13 +162,22 @@ const App = function App() {
     )
     if (
       (diff[0] !== 0 || diff[1] !== 0) &&
-      (!foundObstacle || !foundObstacle.edible)
+      (!foundObstacle || !foundObstacle.properties.includes(PROPERTIES.SOLID))
     ) {
       setPos(nextPos)
       setDotProps(nextPos.map(Math.floor))
-      if (foundObstacle && foundObstacle.edible) {
-        setObstacles(obstacles.filter(x => x.key !== foundObstacle.key))
-        setHistory([...history, { pos: foundObstacle.pos, key: generateKey() }])
+      if (
+        foundObstacle &&
+        foundObstacle.properties.includes(PROPERTIES.EDIBLE)
+      ) {
+        setObstacles(
+          obstacles.filter(
+            x =>
+              getComponentPropsFromObject(x).key !==
+              getComponentPropsFromObject(foundObstacle).key
+          )
+        )
+        setHistory([...history, { pos: foundObstacle.pos }])
       }
     }
   }
@@ -160,26 +197,23 @@ const App = function App() {
         fontSize: CSS.px(pixelUnit),
         fontFamily: 'Consolas'
       }}>
-      {history.map(({ pos, key }) => (
+      {history.map(object => (
         <div
-          key={pos.join()}
-          style={{
-            ...objectStyles,
-            ...transformFromXY(pos),
+          {...getComponentPropsFromObject(object, {
+            style: {
             fontSize: 10,
             alignItems: 'flex-end'
-          }}>
+            }
+          })}>
           {'💩'}
         </div>
       ))}
       <animated.div
-        style={{
-          ...objectStyles,
-          ...transformFromXY(Object.values(dotProps).map(({ value }) => value)),
-          textAlign: 'center',
-          color: 'red'
-        }}>
-        {'🐇'}
+        {...getComponentPropsFromObject({
+          pos: Object.values(dotProps).map(({ value }) => value),
+          content: playerContent
+        })}>
+        {playerContent}
       </animated.div>
       <Obstacles obstacles={obstacles} />
       <div
