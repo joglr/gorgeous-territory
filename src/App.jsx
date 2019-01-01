@@ -133,8 +133,8 @@ const App = function App() {
       posEquals(nextPos.map(Math.floor))(pos)
     )
     if (
-      diff[0] !== 0 ||
-      (diff[1] !== 0 && (!foundObstacle || foundObstacle.edible))
+      (diff[0] !== 0 || diff[1] !== 0) &&
+      (!foundObstacle || !foundObstacle.edible)
     ) {
       setPos(nextPos)
       setDotProps(nextPos.map(Math.floor))
