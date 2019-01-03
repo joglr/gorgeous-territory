@@ -194,7 +194,9 @@ const App = function App() {
     <div
       style={{
         fontSize: CSS.px(pixelUnit),
-        fontFamily: 'Consolas'
+        fontFamily: 'Consolas',
+        background: 'hsl(156, 100%, 75%)',
+        height: '100vh'
       }}>
       {history.map(object => (
         <div
