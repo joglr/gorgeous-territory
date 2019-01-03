@@ -60,7 +60,6 @@ const items = [
   { content: '🕸', properties: [PROPERTIES.SLOW] }
 ]
 
-const generateKey = () => (Math.random() * 10 ** 6).toString(36)
 const toUnits = pixels => Math.floor(pixels / pixelUnit)
 const toPixels = units => units * pixelUnit
 const addVector = ([x1, y1], [x2, y2]) => [x1 + x2, y1 + y2]
@@ -113,7 +112,7 @@ const getComponentPropsFromObject = (
 
 const posEquals = ([x, y]) => ([otherX, otherY]) => otherX === x && otherY === y
 
-const Obstacles = React.memo(function({ obstacles }) {
+const MemoedObstacles = React.memo(function({ obstacles }) {
   return (
     <>
       {obstacles.map(object => (
@@ -215,7 +214,7 @@ const App = function App() {
         })}>
         {playerContent}
       </animated.div>
-      <Obstacles obstacles={obstacles} />
+      <MemoedObstacles obstacles={obstacles} />
       <div
         style={{
           position: 'absolute'
