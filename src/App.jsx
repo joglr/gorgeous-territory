@@ -38,26 +38,26 @@ const items = [
   { content: '🗻', properties: [PROPERTIES.SOLID] },
   { content: '🌴', properties: [PROPERTIES.SOLID] },
   { content: '🏡', properties: [PROPERTIES.SOLID] },
-  { content: '�', properties: [PROPERTIES.SOLID] },
-  { content: '�', properties: [PROPERTIES.SOLID] },
+  { content: '🏠', properties: [PROPERTIES.SOLID] },
   { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌲', properties: [PROPERTIES.SOLID] },
-  { content: '�', properties: [PROPERTIES.SOLID] },
+  { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
-  { content: '🐍', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  { content: '🐉', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  { content: '🦀', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  { content: '🕷', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  { content: '🦂', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  { content: '🐊', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  { content: '🕸', properties: [PROPERTIES.SLOW] }
+  { content: '🌳', properties: [PROPERTIES.SOLID] }
+  // { content: '🐍', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  // { content: '🐉', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  // { content: '🦀', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  // { content: '🕷', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  // { content: '🦂', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  // { content: '🐊', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
+  // { content: '🕸', properties: [PROPERTIES.SLOW] }
 ]
 
 const toUnits = pixels => Math.floor(pixels / pixelUnit)
@@ -202,8 +202,8 @@ const App = function App() {
         <div
           {...getComponentPropsFromObject(object, {
             style: {
-            fontSize: 10,
-            alignItems: 'flex-end'
+              fontSize: 10,
+              alignItems: 'flex-end'
             }
           })}>
           {'💩'}
