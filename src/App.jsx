@@ -4,10 +4,10 @@ import './App.css'
 import useKeys from './hooks/use-keys'
 import emoji from 'emoji-dictionary'
 
-const pixelUnit = 20
-const obstacleFrequency = 1 / 5
+const pixelUnit = 30
+const obstacleFrequency = 1 / 3
 const frameRate = 60
-const speed = 1 / frameRate
+const speed = (1 / frameRate) * 20
 const playerContent = '🐇'
 const objectStyles = {
   width: CSS.px(pixelUnit),
@@ -151,10 +151,10 @@ const App = function App() {
     setCount(frameCount + 1)
     let diff = [0, 0]
 
-    if (keys.includes('left')) diff[0] = -speed * pixelUnit
-    if (keys.includes('right')) diff[0] = +speed * pixelUnit
-    if (keys.includes('up')) diff[1] = -speed * pixelUnit
-    if (keys.includes('down')) diff[1] = +speed * pixelUnit
+    if (keys.includes('left')) diff[0] = -speed
+    if (keys.includes('right')) diff[0] = +speed
+    if (keys.includes('up')) diff[1] = -speed
+    if (keys.includes('down')) diff[1] = +speed
     const nextPos = addVector(pos, diff)
     const foundObstacle = obstacles.find(({ pos }) =>
       posEquals(nextPos.map(Math.floor))(pos)
