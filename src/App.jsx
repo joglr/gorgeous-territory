@@ -7,8 +7,9 @@ import emoji from 'emoji-dictionary'
 const pixelUnit = 30
 const obstacleFrequency = 1 / 3
 const frameRate = 60
+const defaultCharacter = '🐇'
+const defaultEffectDuration = 20
 const speed = (1 / frameRate) * 20
-const playerContent = '🐇'
 const objectStyles = {
   width: CSS.px(pixelUnit),
   height: CSS.px(pixelUnit),
@@ -28,7 +29,17 @@ const PROPERTIES = {
   EDIBLE: 'edible',
   SOLID: 'solid',
   DANGEROUS: 'dangerous',
-  SLOW: 'slow'
+  EQUIPABLE: 'equipable',
+  FAST: 'fast',
+  SLOW: 'slow',
+  FLY: 'fly'
+}
+
+const defaultItemProps = {
+  properties: [],
+  effects: [],
+  duration: defaultEffectDuration,
+  amplifier: 1
 }
 
 const items = [
@@ -46,19 +57,45 @@ const items = [
   { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌲', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
+  { content: '🌵', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
   { content: '🌳', properties: [PROPERTIES.SOLID] },
-  { content: '🌳', properties: [PROPERTIES.SOLID] }
+  { content: '🌳', properties: [PROPERTIES.SOLID] },
   // { content: '🐍', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
   // { content: '🐉', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
   // { content: '🦀', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
   // { content: '🕷', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
   // { content: '🦂', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
   // { content: '🐊', properties: [PROPERTIES.SOLID, PROPERTIES.DANGEROUS] },
-  // { content: '🕸', properties: [PROPERTIES.SLOW] }
-]
+  {
+    content: '🚁',
+    properties: [PROPERTIES.EQUIPABLE],
+    effects: [PROPERTIES.FLY]
+  },
+  {
+    content: '🛸',
+    properties: [PROPERTIES.EQUIPABLE],
+    effects: [PROPERTIES.FLY],
+    amplifier: 1.2
+  },
+  {
+    content: '🚗',
+    properties: [PROPERTIES.EQUIPABLE],
+    effects: [PROPERTIES.FAST],
+    amplifier: 1.2
+  },
+  {
+    content: '🕸',
+    properties: [PROPERTIES.EQUIPABLE],
+    effects: [PROPERTIES.SLOW],
+    amplifier: 0.2
+  }
+].map(item => ({
+  ...defaultItemProps,
+  ...item
+}))
 
 const toUnits = pixels => Math.floor(pixels / pixelUnit)
 const toPixels = units => units * pixelUnit
@@ -124,6 +161,8 @@ const MemoedObstacles = React.memo(function({ obstacles }) {
 
 const App = function App() {
   const keys = useKeys(['up', 'down', 'left', 'right', 'space'])
+  const [character, setCharacter] = useState(defaultCharacter)
+  const [effects, setEffects] = useState({})
   const [frameCount, setCount] = useState(0)
   const [history, setHistory] = useState([])
   const generateObstacles = generateObstaclesFactory({
@@ -150,7 +189,6 @@ const App = function App() {
   function update() {
     setCount(frameCount + 1)
     let diff = [0, 0]
-
     if (keys.includes('left')) diff[0] = -speed
     if (keys.includes('right')) diff[0] = +speed
     if (keys.includes('up')) diff[1] = -speed
@@ -159,24 +197,53 @@ const App = function App() {
     const foundObstacle = obstacles.find(({ pos }) =>
       posEquals(nextPos.map(Math.floor))(pos)
     )
-    if (
-      (diff[0] !== 0 || diff[1] !== 0) &&
-      (!foundObstacle || !foundObstacle.properties.includes(PROPERTIES.SOLID))
-    ) {
-      setPos(nextPos)
-      setDotProps(nextPos.map(Math.floor))
-      if (
-        foundObstacle &&
-        foundObstacle.properties.includes(PROPERTIES.EDIBLE)
+    if (diff[0] !== 0 || diff[1] !== 0) {
+      if (Object.keys(effects).includes(PROPERTIES.FLY)) {
+        setPos(nextPos)
+        setDotProps(nextPos.map(Math.floor))
+      } else if (
+        !foundObstacle ||
+        !foundObstacle.properties.includes(PROPERTIES.SOLID)
       ) {
-        setObstacles(
-          obstacles.filter(
-            x =>
-              getComponentPropsFromObject(x).key !==
-              getComponentPropsFromObject(foundObstacle).key
+        setPos(nextPos)
+        setDotProps(nextPos.map(Math.floor))
+        if (
+          foundObstacle &&
+          (foundObstacle.properties.includes(PROPERTIES.EDIBLE) ||
+            foundObstacle.properties.includes(PROPERTIES.EQUIPABLE))
+        ) {
+          setObstacles(
+            obstacles.filter(
+              x =>
+                getComponentPropsFromObject(x).key !==
+                getComponentPropsFromObject(foundObstacle).key
+            )
           )
-        )
-        setHistory([...history, { pos: foundObstacle.pos }])
+          if (foundObstacle.properties.includes(PROPERTIES.EQUIPABLE)) {
+            setCharacter(foundObstacle.content)
+            foundObstacle.effects.forEach(effect => {
+              console.log(effect)
+              setEffects({ ...effects, [effect]: foundObstacle.amplifier })
+              setTimeout(() => {
+                setCharacter(defaultCharacter)
+                setEffects(
+                  Object.entries(effects).reduce(
+                    (total, [effect, amplifier]) => {
+                      if (!foundObstacle.effects.includes(effect)) {
+                        return {
+                          ...total,
+                          [effect]: amplifier
+                        }
+                      }
+                      return total
+                    },
+                    {}
+                  )
+                )
+              }, foundObstacle.duration * 1000)
+            })
+          } else setHistory([...history, { pos: foundObstacle.pos }])
+        }
       }
     }
   }
@@ -209,19 +276,24 @@ const App = function App() {
           {'💩'}
         </div>
       ))}
+      <MemoedObstacles obstacles={obstacles} />
       <animated.div
         {...getComponentPropsFromObject({
           pos: Object.values(dotProps).map(({ value }) => value),
-          content: playerContent
+          content: character
         })}>
-        {playerContent}
+        {character}
       </animated.div>
-      <MemoedObstacles obstacles={obstacles} />
       <div
         style={{
           position: 'absolute'
         }}>
         noms: {history.length}
+        {Object.entries(effects).map(([effect, amplifier]) => (
+          <div>
+            {effect}: {amplifier}
+          </div>
+        ))}
       </div>
     </div>
   )
