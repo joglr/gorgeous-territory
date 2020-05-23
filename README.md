@@ -2,7 +2,7 @@
 
 This is a game, made with React.
 
-https://gorgeous-territory.now.sh/
+https://gorgeous-territory.joglr.dev
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
